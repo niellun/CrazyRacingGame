@@ -2,13 +2,18 @@
 
 void init()
 {
+	car_left = true;
+	car_position = 1;
+  	car_jump = 0;
 	lines_next = false;
 	// fill road with empty space and lines
 	for(byte i=0; i<ROAD_LENGTH; i++)
 	{
-		road1[i] = lines_next ? _BV(ROAD_LINE) : 0;
-		road2[i] = lines_next ? _BV(ROAD_LINE) : 0;
+		map1[i] = lines_next ? _BV(ROAD_LINE) : 0;
+		map2[i] = lines_next ? _BV(ROAD_LINE) : 0;
+		lines_next = !lines_next;
 	}
+	last = ROAD_LENGTH-1;
 }
 
 bool check_colision(byte i)
@@ -22,112 +27,98 @@ bool check_colision(byte i)
 	return false;
 }
 
+bool draw()
+{
+	bool result = false;
+	for(byte i = 0; i<ROAD_LENGTH; i++)
+	{
+		byte k = (last+1+i)%ROAD_LENGTH;
+		road1[i] = map1[k];
+		road2[i] = map2[k];
+		if(i == car_position)
+		{
+			byte jump = car_jump==0 ? 0 : _BV(CAR_JUMP);
+
+			if(car_left)
+			{
+				road1[i] |= _BV(CAR_FRONT) | jump;
+				road1[i-1] |= _BV(CAR_BACK) | jump;
+			}
+			else
+			{
+				road2[i] |= _BV(CAR_FRONT) | jump;
+				road2[i-1] |= _BV(CAR_BACK) | jump;				
+			}
+			result |= check_colision(i) | check_colision(i-1);	
+		}
+	}
+	return result;
+}
 
 bool right()
 {
-	bool result = false;
-	cli();
-	for(byte i=0; i<ROAD_LENGTH; i++)
+	if(car_left)
 	{
-		if(road1[i]&_BV(CAR_FRONT))
-		{
-			road1[i] &= ~_BV(CAR_FRONT);
-			road2[i] |= _BV(CAR_FRONT);
-			result |= check_colision(i);
-		}
-		if(road1[i]&_BV(CAR_BACK))
-		{
-			road1[i] &= ~_BV(CAR_BACK);
-			road2[i] |= _BV(CAR_BACK);
-			result |= check_colision(i);
-		}
+		car_left = false;
+		return true;
 	}
-	sei();
-	return result;
+	return false;
 }
 
 bool left()
 {
-	bool result = false;
-	cli();
-	for(byte i=0; i<ROAD_LENGTH; i++)
+	if(!car_left)
 	{
-		if(road2[i]&_BV(CAR_FRONT))
-		{
-			road2[i] &= ~_BV(CAR_FRONT);
-			road1[i] |= _BV(CAR_FRONT);
-			result |= check_colision(i);
-		}
-		if(road2[i]&_BV(CAR_BACK))
-		{
-			road2[i] &= ~_BV(CAR_BACK);
-			road1[i] |= _BV(CAR_BACK);
-			result |= check_colision(i);
-		}
+		car_left = true;
+		return true;
 	}
-	sei();
-	return result;
+	return false;
 }
 
 bool forward()
 {
-	bool result = false;
-	cli();
-	for(byte i=1; i<ROAD_LENGTH-1; i++)
+	if(car_position<ROAD_LENGTH-1)
 	{
-		if(road1[i]&_BV(CAR_FRONT))
-		{
-			road1[i] &= ~_BV(CAR_FRONT);
-			road1[i-1] &= ~_BV(CAR_BACK);
-			road1[i+1] |= _BV(CAR_FRONT);
-			road1[i] |= _BV(CAR_BACK);
-			result |= check_colision(i);
-		}
-		if(road2[i]&_BV(CAR_FRONT))
-		{
-			road2[i] &= ~_BV(CAR_FRONT);
-			road2[i-1] &= ~_BV(CAR_BACK);
-			road2[i+1] |= _BV(CAR_FRONT);
-			road2[i] |= _BV(CAR_BACK);
-			result |= check_colision(i);
-		}
+		car_position++;
+		return true;
 	}
-	sei();
-	return result;
+	return false;
 }
 
 bool backward()
 {
-	bool result = false;
-	cli();
-	for(byte i=2; i<ROAD_LENGTH; i++)
+	if(car_position>1)
 	{
-		if(road1[i]&_BV(CAR_FRONT))
-		{
-			road1[i] &= ~_BV(CAR_FRONT);
-			road1[i-1] &= ~_BV(CAR_BACK);
-			road1[i-1] |= _BV(CAR_FRONT);
-			road1[i-2] |= _BV(CAR_BACK);
-			result |= check_colision(i);
-		}
-		if(road2[i]&_BV(CAR_FRONT))
-		{
-			road2[i] &= ~_BV(CAR_FRONT);
-			road1[i-1] &= ~_BV(CAR_BACK);
-			road2[i-1] |= _BV(CAR_FRONT);
-			road2[i-2] |= _BV(CAR_BACK);
-			result |= check_colision(i);
-		}
+		car_position--;
+		return true;
 	}
-	sei();
-	return result;
+	return false;
 }
 
-void jump()
+bool jump()
 {
+	if(car_jump == 0)
+	{
+		car_jump = JUMP_LENGTH;
+		return true;
+	}
+	return false;
+}
+
+void move ()
+{
+	// move pointer
+	last = (last+1)%ROAD_LENGTH;
+
+	if(car_jump>0)
+		car_jump--;
+
+	// generate lines
+	map1[last] = lines_next ? _BV(ROAD_LINE) : 0;
+	map2[last] = lines_next ? _BV(ROAD_LINE) : 0;
+
+	// change lines generation status
+	lines_next = !lines_next;
 	
-}
-
-bool move ()
-{
+	// generate obstacles	
 }
