@@ -14,23 +14,26 @@
 #define END 10
 #define WAIT 20
 
+volatile byte instance;
+volatile byte music_type;
+
 char getgraphics(byte x, bool left)
 {
-	char c = '.';
+	char c = ' ';
 	if(x & _BV(ROAD_LINE))
-		c = left ? '(' : ')';
+		c = left ? instance%2 : (instance+1)%2;
 	if(x & _BV(OBSTACLE1))
-		c = '#';
+		c = 7;
 	if(x & _BV(OBSTACLE2))
-		c = 'x';
+		c = 6;
 	if(x & _BV(OBSTACLE3))
 		c = 'x';
 	if(x & _BV(OBSTACLE4))
-		c = 'x';
+		c = 'X';
 	if(x & _BV(CAR_FRONT))
-		c = x & _BV(CAR_JUMP) ? '8': '1';
+		c = x & _BV(CAR_JUMP) ? 2: 4;
 	if(x & _BV(CAR_BACK))
-		c = x & _BV(CAR_JUMP) ? '9': '2';
+		c = x & _BV(CAR_JUMP) ? 3: 5;
 	return c;
 }
 
@@ -159,7 +162,7 @@ void milisecond()
 	{
 		// end of the game
 		mode = END;
-		music = false;
+		music_type = 1;
 		PORTA |= _BV(PA6);
 		TIMSK &= ~_BV(TOIE0);
 	}
@@ -177,9 +180,29 @@ ISR(TIMER0_OVF_vect) {
 
 	if (sample_count-- == 0) 
     {
-     	sample_count = 8;           
-     	OCR3B = music ? pgm_read_byte(&pcm_samples[sample++]) : 0;
-     	if(sample>pcm_length)sample=0;
+     	sample_count = 8; 
+		if(!music)
+			return;
+
+		if(music_type == 1)
+		{
+			music_type = 2;
+			sample = 0;
+		}
+
+		if(music_type == 0)
+		{      
+     		OCR3B = pgm_read_byte(&pcm_samples[sample++]);
+     		if(sample>pcm_length)
+				sample=0;
+		}
+
+		if(music_type == 2)
+		{
+     		OCR3B = pgm_read_byte(&pcm_thrombone[sample++]);
+     		if(sample>pcm_thromblength)
+				music=false;			
+		}
     }
 
 }
@@ -193,6 +216,8 @@ void gameinit()
 	incrementerspeed = 256;
 	speed = 1024;
 	points = 0;
+	instance = random()%255;
+	music_type = 0;
 
 	init();
 	dispdraw();
@@ -208,6 +233,10 @@ int main( void ) {
 	lcd_init();
 	lcd_write_ctrl(LCD_ON);
 	lcd_write_ctrl(LCD_CLEAR);
+
+	writeline("-=Night Coders=-");
+	lcd_write_ctrl(ENTER);
+	writeline("    presents    ");
 
 	// set led as output
 	DDRA |= _BV(PA6);

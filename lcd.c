@@ -27,6 +27,83 @@ lcd_init(void)
   lcd_write_ctrl(LCD_CLEAR);
 	/* entry mode set: increment DDRAM pointer when a character is written */
   lcd_write_ctrl(LCD_MODE|0x02);
+
+	lcd_write_ctrl(LCD_CGRAM);
+	lcd_write_data(31);
+	lcd_write_data(0);
+	lcd_write_data(0);
+	lcd_write_data(0);
+	lcd_write_data(0);
+	lcd_write_data(0);
+	lcd_write_data(0);
+	lcd_write_data(0);
+
+	lcd_write_data(0);
+	lcd_write_data(0);
+	lcd_write_data(0);
+	lcd_write_data(0);
+	lcd_write_data(0);
+	lcd_write_data(0);
+	lcd_write_data(0);
+	lcd_write_data(31);
+
+	lcd_write_data(0);  	
+	lcd_write_data(7);
+	lcd_write_data(2);
+	lcd_write_data(15);
+	lcd_write_data(15);
+	lcd_write_data(2);
+	lcd_write_data(7);
+	lcd_write_data(0);
+
+	lcd_write_data(0);
+	lcd_write_data(14);
+	lcd_write_data(5);
+	lcd_write_data(31);
+	lcd_write_data(31);
+	lcd_write_data(5);
+	lcd_write_data(14);
+	lcd_write_data(0);
+
+	lcd_write_data(15); 
+	lcd_write_data(6);
+	lcd_write_data(31);
+	lcd_write_data(31);
+	lcd_write_data(31);
+	lcd_write_data(31);
+	lcd_write_data(6);
+	lcd_write_data(15);
+
+	lcd_write_data(30);
+	lcd_write_data(13);
+	lcd_write_data(31);
+	lcd_write_data(31);
+	lcd_write_data(31);
+	lcd_write_data(31);
+	lcd_write_data(13);
+	lcd_write_data(30);
+
+	lcd_write_data(0); 
+	lcd_write_data(27);
+	lcd_write_data(27);
+	lcd_write_data(0);
+	lcd_write_data(0);
+	lcd_write_data(27);
+	lcd_write_data(27);
+	lcd_write_data(0);
+
+	lcd_write_data(27); 
+	lcd_write_data(14);
+	lcd_write_data(10);
+	lcd_write_data(14);
+	lcd_write_data(14);
+	lcd_write_data(10);
+	lcd_write_data(14);
+	lcd_write_data(27);
+
+
+	lcd_write_ctrl(LCD_DDRAM);
+
 }
 
 /* write a byte into register rs (0 = control, 1 = data). */

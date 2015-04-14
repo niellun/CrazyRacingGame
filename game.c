@@ -100,6 +100,33 @@ bool jump()
 	return false;
 }
 
+void generateobstacles()
+{
+	if(random()/3>random())
+	{
+		map1[last]|=_BV(OBSTACLE1);
+		return;
+	}
+
+	if(random()/4>random())
+	{
+		map2[last]|=_BV(OBSTACLE1);
+		return;
+	}
+
+	if(random()/4>random())
+	{
+		map1[last]|=_BV(OBSTACLE2);
+		return;
+	}
+
+	if(random()/3>random())
+	{
+		map2[last]|=_BV(OBSTACLE2);
+		return;
+	}
+}
+
 void move ()
 {
 	// move pointer
@@ -117,17 +144,7 @@ void move ()
 	// generate obstacles
 	if(!lines_next)
 	{	
-		if(random()/2>random())
-		{
-			map1[last]|=_BV(OBSTACLE1);
-		}
-		else
-		{
-			if(random()/2>random())
-			{
-				map2[last]|=_BV(OBSTACLE1);
-			}
-		}
+		generateobstacles();
 	}
 
 	// change lines generation status
