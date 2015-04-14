@@ -164,14 +164,13 @@ void milisecond()
 		mode = END;
 		music_type = 1;
 		PORTA |= _BV(PA6);
-		TIMSK &= ~_BV(TOIE0);
 	}
 }
 
 // timer0 overflow 1024 times per second
 ISR(TIMER0_OVF_vect) {
 	
-	if(draw_timer-- == 0)
+	if(draw_timer-- == 0 && mode<END)
 	{
 		draw_timer = 32;
 		milisecond();
@@ -197,11 +196,13 @@ ISR(TIMER0_OVF_vect) {
 				sample=0;
 		}
 
-		if(music_type == 2)
+		if(music_type > 1)
 		{
      		OCR3B = pgm_read_byte(&pcm_thrombone[sample++]);
      		if(sample>pcm_thromblength)
-				music=false;			
+			{
+				music=false;	
+			}		
 		}
     }
 
@@ -288,6 +289,7 @@ int main( void ) {
 		if(mode == END)
 		{
 			_delay_ms(30000);
+			TIMSK &= ~_BV(TOIE0);
 			lcd_write_ctrl(LCD_CLEAR);
 			PORTA &= ~_BV(PA6);
 			//write score
