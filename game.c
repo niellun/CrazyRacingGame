@@ -16,20 +16,8 @@ void init()
 	last = ROAD_LENGTH-1;
 }
 
-bool check_colision(byte i)
-{
-	if(road1[i]&(_BV(CAR_FRONT)|_BV(CAR_BACK))>0 && road1[i]>(_BV(OBSTACLE1)|_BV(CAR_JUMP)))
-		return true;
-
-	if(road2[i]&(_BV(CAR_FRONT)|_BV(CAR_BACK))>0 && road2[i]>(_BV(OBSTACLE1)|_BV(CAR_JUMP)))
-		return true;
-
-	return false;
-}
-
 bool draw()
 {
-	bool result = false;
 	for(byte i = 0; i<ROAD_LENGTH; i++)
 	{
 		byte k = (last+1+i)%ROAD_LENGTH;
@@ -37,7 +25,7 @@ bool draw()
 		road2[i] = map2[k];
 		if(i == car_position)
 		{
-			byte jump = car_jump==0 ? 0 : _BV(CAR_JUMP);
+			byte jump = car_jump==0 ? _BV(CAR_JUMP) : 0;
 
 			if(car_left)
 			{
@@ -48,11 +36,17 @@ bool draw()
 			{
 				road2[i] |= _BV(CAR_FRONT) | jump;
 				road2[i-1] |= _BV(CAR_BACK) | jump;				
-			}
-			result |= check_colision(i) | check_colision(i-1);	
+			}	
 		}
 	}
-	return result;
+	if(car_left)
+	{
+		return road1[car_position]>obstacle || road1[car_position-1]>obstacle;
+	}
+	else
+	{
+		return road2[car_position]>obstacle || road2[car_position-1]>obstacle;
+	}
 }
 
 bool right()
@@ -97,9 +91,10 @@ bool backward()
 
 bool jump()
 {
-	if(car_jump == 0)
+	if(car_jump == 0 && no_jump == 0)
 	{
 		car_jump = JUMP_LENGTH;
+		no_jump = JUMP_LENGTH + NO_JUMP;
 		return true;
 	}
 	return false;
@@ -112,13 +107,30 @@ void move ()
 
 	if(car_jump>0)
 		car_jump--;
+	if(no_jump>0)
+		no_jump--;
 
 	// generate lines
 	map1[last] = lines_next ? _BV(ROAD_LINE) : 0;
 	map2[last] = lines_next ? _BV(ROAD_LINE) : 0;
 
+	// generate obstacles
+	if(!lines_next)
+	{	
+		if(random()/2>random())
+		{
+			map1[last]|=_BV(OBSTACLE1);
+		}
+		else
+		{
+			if(random()/2>random())
+			{
+				map2[last]|=_BV(OBSTACLE1);
+			}
+		}
+	}
+
 	// change lines generation status
 	lines_next = !lines_next;
 	
-	// generate obstacles	
 }

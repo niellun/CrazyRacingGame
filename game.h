@@ -6,6 +6,7 @@
 /*******************************************************************************/
 #include <stdbool.h>
 #include <avr/io.h>
+#include <stdlib.h>
 
 /********************************************************************************
 / Types
@@ -26,7 +27,8 @@ typedef unsigned char byte;
 #define OBSTACLE4 6
 #define CAR_JUMP 7
 
-#define JUMP_LENGTH 3
+#define JUMP_LENGTH 4
+#define NO_JUMP 2
 
 /********************************************************************************
 / Variables
@@ -43,6 +45,10 @@ byte last;
 bool car_left;
 byte car_position;
 byte car_jump;
+byte no_jump;
+
+
+static byte obstacle = _BV(OBSTACLE1)+_BV(CAR_JUMP);
 
 /********************************************************************************
 / Functions
